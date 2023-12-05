@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>PDF Viewer</h1>
+
+    <div id="pdf-container">
+        <div id="pdf-viewer"></div>
+        <div id="page-controls">
+            <button id="prev-page">Previous Page</button>
+            <span id="current-page">Page 1</span>
+            <span>of</span>
+            <span id="total-pages"></span>
+            <button id="next-page">Next Page</button>
+        </div>
+    </div>
+
+    <label for="file-input">Select PDF File:</label>
+    <input type="file" id="file-input" accept="application/pdf">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.2/pdf.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

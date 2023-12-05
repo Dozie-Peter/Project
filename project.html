@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload and Viewer with TTS</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.0.1/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.7.0/viewer.min.js"></script>
+</head>
+<body>
+  <h1>File Upload and Viewer with Text-to-Speech</h1>
+  <input type="file" id="fileInput" accept=".pdf, .docx, .jpg, .jpeg, .png, .ppt, .pptx">
+  <button onclick="uploadFile()">Upload</button>
+  <div id="fileViewer"></div>
+
+  <script>
+    function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const fileViewer = document.getElementById('fileViewer');
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const fileType = getFileType(file.name);
+          const content = e.target.result;
+
+          if (fileType === 'image') {
+            fileViewer.innerHTML = `<img src="${content}" alt="Uploaded Image">`;
+          } else if (fileType === 'pdf') {
+            fileViewer.innerHTML = `<embed src="${content}" type="application/pdf" id="pdfViewer" />`;
+            initializeTextToSpeech();
+          } else if (fileType === 'document') {
+            fileViewer.innerHTML = `<embed src="${content}" type="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />`;
+          } else {
+            fileViewer.innerHTML = `<p>Unsupported file type. Unable to display.</p>`;
+          }
+        };
+
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function getFileType(fileName) {
+      const ext = fileName.split('.').pop().toLowerCase();
+      const imageExtensions = ['jpg', 'jpeg', 'png'];
+      const pdfExtensions = ['pdf'];
+      const documentExtensions = ['doc', 'docx', 'ppt', 'pptx'];
+
+      if (imageExtensions.includes(ext)) {
+        return 'image';
+      } else if (pdfExtensions.includes(ext)) {
+        return 'pdf';
+      } else if (documentExtensions.includes(ext)) {
+        return 'document';
+      } else {
+        return 'unknown';
+      }
+    }
+
+    function initializeTextToSpeech() {
+      const pdfViewer = document.getElementById('pdfViewer');
+      
+      pdfViewer.addEventListener('load', function () {
+        const textContent = pdfViewer.contentDocument.body.innerText;
+        
+      
+    // Implement TTS using SpeechSynthesisUtterance
+      var speechSynthesis = window.speechSynthesis;
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.onstart = function() {
+        console.log('TTS started');
+      };
+      utterance.onend = function() {
+        console.log('TTS ended');
+      };
+
+      // Play the TTS
+      speechSynthesis.speak(utterance);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload and Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.0.1/mammoth.browser.min.js"></script>
+  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.7.0/viewer.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.7.0/viewer.min.js"></script>
+</head>
+<body>
+  <h1>File Upload and Viewer</h1>
+  <input type="file" id="fileInput" accept=".pdf, .doc, .docx, .jpg, .jpeg, .png, .ppt, .pptx">
+  <button onclick="uploadFile()">Upload</button>
+  <div id="fileViewer"></div>
+
+  <script>
+    function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const fileViewer = document.getElementById('fileViewer');
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const arrayBuffer = e.target.result;
+
+          if (file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            displayDocxContent(arrayBuffer);
+          } else if (file.type === 'application/pdf') {
+            displayPdfContent(arrayBuffer);
+          } else {
+            fileViewer.innerHTML = `<p>Unsupported file type. Unable to display.</p>`;
+          }
+        };
+
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    function displayDocxContent(arrayBuffer) {
+      mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+        .then(result => {
+          const fileViewer = document.getElementById('fileViewer');
+          fileViewer.innerHTML = `<p>${result.value}</p>`;
+
+          // Optionally, you can use Viewer.js to enhance the display
+          const viewer = new Viewer(fileViewer, {
+            navbar: false,
+            toolbar: {
+              zoomIn: 4,
+              zoomOut: 4,
+              oneToOne: 4,
+              reset: 4,
+              prev: 4,
+              play: {
+                show: 4,
+                size: 'large',
+              },
+              next: 4,
+              rotateLeft: 4,
+              rotateRight: 4,
+              flipHorizontal: 4,
+              flipVertical: 4,
+            },
+          });
+        })
+        .catch(error => console.error('Error reading DOCX:', error));
+    }
+
+    function displayPdfContent(arrayBuffer) {
+      const fileViewer = document.getElementById('fileViewer');
+      fileViewer.innerHTML = `<canvas id="pdfCanvas"></canvas>`;
+
+      const pdfCanvas = document.getElementById('pdfCanvas');
+
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      loadingTask.promise.then(function(pdfDoc) {
+        const numPages = pdfDoc.numPages;
+        
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+          pdfDoc.getPage(pageNum).then(function(page) {
+            const scale = 1.5;
+            const viewport = page.getViewport({ scale });
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+              canvasContext: context,
+              viewport: viewport,
+            };
+
+            page.render(renderContext).promise.then(function() {
+              pdfCanvas.appendChild(canvas);
+            });
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>
